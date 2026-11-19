@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: bank-api
+  datasource:
+    # Valores por defecto = docker-compose.yml; se sobreescriben con variables de entorno
+    url: ${DB_URL:jdbc:mysql://localhost:3307/bank}
+    username: ${DB_USER:bank}
+    password: ${DB_PASSWORD:bank}
+  jpa:
+    open-in-view: false          # evita consultas "escondidas" en la capa web
+    hibernate:
+      ddl-auto: validate         # Hibernate solo VALIDA; el esquema lo manda Flyway
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health   # única superficie de operación expuesta; no hay endpoints sensibles

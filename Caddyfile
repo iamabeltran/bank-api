@@ -1,0 +1,4 @@
+# Caddy obtiene y renueva el certificado HTTPS solo. API_DOMAIN viene de .env (por ejemplo api.tudominio.com).
+{$API_DOMAIN} {
+    reverse_proxy app:8080
+}

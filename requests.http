@@ -1,0 +1,72 @@
+### Crear cuentas
+POST http://localhost:8080/accounts
+Content-Type: application/json
+
+{ "ownerName": "Ana", "currency": "MXN" }
+
+###
+POST http://localhost:8080/accounts
+Content-Type: application/json
+
+{ "ownerName": "Luis", "currency": "MXN" }
+
+### Depositar 500 a la cuenta 1
+POST http://localhost:8080/accounts/1/deposits
+Content-Type: application/json
+
+{ "amount": 500.00 }
+
+### Transferir 200 de la cuenta 1 a la 2
+POST http://localhost:8080/transfers
+Content-Type: application/json
+
+{ "fromAccountId": 1, "toAccountId": 2, "amount": 200.00 }
+
+### Consultar saldos
+GET http://localhost:8080/accounts/1
+
+###
+GET http://localhost:8080/accounts/2
+
+### Error esperado: saldo insuficiente (422)
+POST http://localhost:8080/transfers
+Content-Type: application/json
+
+{ "fromAccountId": 1, "toAccountId": 2, "amount": 999999 }
+
+### Error esperado: validación (400)
+POST http://localhost:8080/transfers
+Content-Type: application/json
+
+{ "fromAccountId": 1, "amount": -5 }
+
+### ---------------- Transferencia idempotente ----------------
+
+### Primera vez: 201 Created
+POST http://localhost:8080/transfers
+Content-Type: application/json
+Idempotency-Key: demo-key-001
+
+{ "fromAccountId": 1, "toAccountId": 2, "amount": 50.00 }
+
+### Repetir EXACTAMENTE lo mismo: 200 OK + cabecera Idempotent-Replayed: true (el dinero no se mueve otra vez)
+POST http://localhost:8080/transfers
+Content-Type: application/json
+Idempotency-Key: demo-key-001
+
+{ "fromAccountId": 1, "toAccountId": 2, "amount": 50.00 }
+
+### Misma clave con otro monto: 422 Idempotency key conflict
+POST http://localhost:8080/transfers
+Content-Type: application/json
+Idempotency-Key: demo-key-001
+
+{ "fromAccountId": 1, "toAccountId": 2, "amount": 75.00 }
+
+### ---------------- Historial paginado ----------------
+
+### Más recientes primero; page empieza en 0; size entre 1 y 100
+GET http://localhost:8080/accounts/1/transactions?page=0&size=5
+
+### Documentación interactiva: http://localhost:8080/swagger-ui.html
+### Salud: http://localhost:8080/actuator/health

@@ -1,0 +1,38 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: bank-mysql
+    environment:
+      MYSQL_DATABASE: bank
+      MYSQL_USER: bank
+      MYSQL_PASSWORD: bank
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # La API en contenedor. Solo arranca con el perfil "app", así que el flujo de desarrollo
+  # (docker compose up -d + mvn spring-boot:run) sigue levantando únicamente MySQL:
+  #   docker compose --profile app up --build
+  app:
+    profiles: ["app"]
+    build: .
+    container_name: bank-api
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/bank
+      DB_USER: bank
+      DB_PASSWORD: bank
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql-data:
